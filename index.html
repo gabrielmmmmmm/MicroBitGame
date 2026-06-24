@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JogoMicroBit</title>
+</head>
+<body>
+    <button onclick="conectar()">Conectar MicroBit</button>
+    <script>
+        const log = msg => document.getElementById("log").textContent += msg + "\n";
+        function conectar() {
+            (async () => {
+                try {
+                    const port = await navigator.serial.requestPort();
+                    await port.open({ baudRate: 9600 });
+                    log("Conectado!");
+                    const decoder = new TextDecoderStream();
+                    const readableStreamClosed = port.readable.pipeTo(decoder.writable);
+                    const reader = decoder.readable.getReader();
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        log("Recebido: " + value.trim());
+                    }
+                } catch (err) {
+                    log("Erro: " + err);
+                }
+            })();
+        }
+    </script>
+</body>
+</html>
